@@ -49,21 +49,19 @@
         background-color: #fff3c4;
     }
 
-    /* Conteneur scrollable */
     .comment-container {
         overflow-x: auto;
         white-space: nowrap;
         width: 100%;
     }
 
-    /* Champ de texte */
     .editable {
         border: none;
         background: transparent;
         font-size: 1em;
         text-align: left;
         padding: 8px;
-        min-width: 300px; /* largeur mini avant scroll */
+        min-width: 300px;
     }
 
     .editable:focus {
@@ -97,46 +95,51 @@
             <th>Commentaire</th>
         </tr>
     </thead>
-    <tbody id="tableBody">
-        <!-- Lignes générées automatiquement -->
-    </tbody>
+    <tbody id="tableBody"></tbody>
 </table>
 
 <script>
 const batiments = [
-    { nom: 'A', etages: 5 }, // 0 → 4
-    { nom: 'B', etages: 6 }, // 0 → 5
-    { nom: 'C', etages: 5 }  // 0 → 4
+    { nom: 'A', etages: 5 },
+    { nom: 'B', etages: 6 },
+    { nom: 'C', etages: 5 }
 ];
 
 const tableBody = document.getElementById('tableBody');
 
+// 🔹 Charger les données sauvegardées depuis le localStorage
+const savedData = JSON.parse(localStorage.getItem('appartData') || '{}');
+
+// Fonction pour sauvegarder dans le localStorage
+function saveToLocalStorage() {
+    localStorage.setItem('appartData', JSON.stringify(savedData));
+}
+
 batiments.forEach(bat => {
-    // Ligne d'en-tête du bâtiment
     const trBat = document.createElement('tr');
     trBat.classList.add('batiment-header');
     trBat.innerHTML = `<td colspan="5">Bâtiment ${bat.nom}</td>`;
     tableBody.appendChild(trBat);
 
-    // Boucle sur les étages
     for (let etage = 0; etage < bat.etages; etage++) {
         const trEtage = document.createElement('tr');
         trEtage.classList.add('etage-header');
         trEtage.innerHTML = `<td colspan="5">Étage ${etage}</td>`;
         tableBody.appendChild(trEtage);
 
-        // Appartements : 9 par étage
         for (let num = 1; num <= 9; num++) {
             const appartNum = `${bat.nom}${etage}${num}`;
+            const data = savedData[appartNum] || {}; // 🔹 Restaurer données si dispo
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${appartNum}</td>
-                <td><input type="checkbox" class="couche1"></td>
-                <td><input type="checkbox" class="couche2"></td>
-                <td><input type="checkbox" class="termine"></td>
+                <td><input type="checkbox" class="couche1" ${data.couche1 ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="couche2" ${data.couche2 ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="termine" ${data.termine ? 'checked' : ''}></td>
                 <td class="comment">
                     <div class="comment-container">
-                        <input type="text" class="editable" placeholder="Ajouter un commentaire...">
+                        <input type="text" class="editable" placeholder="Ajouter un commentaire..." value="${data.comment || ''}">
                     </div>
                 </td>
             `;
@@ -145,16 +148,39 @@ batiments.forEach(bat => {
     }
 });
 
-// Gestion automatique du "Terminé"
+// 🔹 Événement : mise à jour automatique du champ "Terminé"
 document.querySelector('#appartTable').addEventListener('change', (e) => {
-    if (e.target.matches('.couche1, .couche2')) {
+    if (e.target.matches('.couche1, .couche2, .termine')) {
         const row = e.target.closest('tr');
-        const couche1 = row.querySelector('.couche1')?.checked;
-        const couche2 = row.querySelector('.couche2')?.checked;
+        const appartNum = row.children[0].textContent;
+        const couche1 = row.querySelector('.couche1').checked;
+        const couche2 = row.querySelector('.couche2').checked;
         const termine = row.querySelector('.termine');
-        if (termine) {
+
+        // coche automatique du champ "Terminé"
+        if (e.target.classList.contains('couche1') || e.target.classList.contains('couche2')) {
             termine.checked = couche1 && couche2;
         }
+
+        // 🔹 Sauvegarde de l'état
+        savedData[appartNum] = {
+            couche1,
+            couche2,
+            termine: termine.checked,
+            comment: row.querySelector('.editable').value
+        };
+        saveToLocalStorage();
+    }
+});
+
+// 🔹 Événement : sauvegarder les commentaires en direct
+document.querySelector('#appartTable').addEventListener('input', (e) => {
+    if (e.target.matches('.editable')) {
+        const row = e.target.closest('tr');
+        const appartNum = row.children[0].textContent;
+        if (!savedData[appartNum]) savedData[appartNum] = {};
+        savedData[appartNum].comment = e.target.value;
+        saveToLocalStorage();
     }
 });
 </script>
