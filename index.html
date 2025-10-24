@@ -22,6 +22,7 @@
         border: 1px solid #ddd;
         padding: 10px;
         text-align: center;
+        vertical-align: middle;
     }
 
     th {
@@ -41,19 +42,28 @@
     td.comment {
         background-color: #fffbea;
         width: 300px;
+        padding: 0;
     }
 
     td.comment:focus-within {
         background-color: #fff3c4;
     }
 
-    .editable {
+    /* Conteneur scrollable */
+    .comment-container {
+        overflow-x: auto;
+        white-space: nowrap;
         width: 100%;
+    }
+
+    /* Champ de texte */
+    .editable {
         border: none;
         background: transparent;
         font-size: 1em;
         text-align: left;
-        padding: 5px;
+        padding: 8px;
+        min-width: 300px; /* largeur mini avant scroll */
     }
 
     .editable:focus {
@@ -117,7 +127,6 @@ batiments.forEach(bat => {
 
         // Appartements : 9 par étage
         for (let num = 1; num <= 9; num++) {
-            // Exemple : étage 2, appart 3 → 23  → A23
             const appartNum = `${bat.nom}${etage}${num}`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -125,7 +134,11 @@ batiments.forEach(bat => {
                 <td><input type="checkbox" class="couche1"></td>
                 <td><input type="checkbox" class="couche2"></td>
                 <td><input type="checkbox" class="termine"></td>
-                <td class="comment"><input type="text" class="editable" placeholder="Ajouter un commentaire..."></td>
+                <td class="comment">
+                    <div class="comment-container">
+                        <input type="text" class="editable" placeholder="Ajouter un commentaire...">
+                    </div>
+                </td>
             `;
             tableBody.appendChild(tr);
         }
