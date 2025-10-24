@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau Appartements</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f7fa;
+        padding: 30px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        background-color: #fff;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #007BFF;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    input[type="checkbox"] {
+        transform: scale(1.3);
+        cursor: pointer;
+    }
+
+    td.comment {
+        background-color: #fffbea;
+    }
+
+    td.comment:focus-within {
+        background-color: #fff3c4;
+    }
+
+    .editable {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 1em;
+        text-align: left;
+        padding: 5px;
+    }
+
+    .editable:focus {
+        outline: 1px solid #007BFF;
+        background-color: #eef6ff;
+    }
+
+    .batiment-header {
+        background-color: #e2e6ea;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .etage-header {
+        background-color: #d9edf7;
+        font-style: italic;
+    }
+</style>
+</head>
+<body>
+
+<h2>Suivi des Appartements</h2>
+
+<table id="appartTable">
+    <thead>
+        <tr>
+            <th>Num Appart</th>
+            <th>Couche 1</th>
+            <th>Couche 2</th>
+            <th>Terminé</th>
+            <th>Commentaire</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+        <!-- Lignes générées automatiquement -->
+    </tbody>
+</table>
+
+<script>
+const batiments = [
+    { nom: 'A', etages: 5 }, // 0 → 4
+    { nom: 'B', etages: 6 }, // 0 → 5
+    { nom: 'C', etages: 5 }  // 0 → 4
+];
+
+const tableBody = document.getElementById('tableBody');
+
+batiments.forEach(bat => {
+    // Ligne d'en-tête du bâtiment
+    const trBat = document.createElement('tr');
+    trBat.classList.add('batiment-header');
+    trBat.innerHTML = `<td colspan="5">Bâtiment ${bat.nom}</td>`;
+    tableBody.appendChild(trBat);
+
+    // Boucle sur les étages
+    for (let etage = 0; etage < bat.etages; etage++) {
+        const trEtage = document.createElement('tr');
+        trEtage.classList.add('etage-header');
+        trEtage.innerHTML = `<td colspan="5">Étage ${etage}</td>`;
+        tableBody.appendChild(trEtage);
+
+        // Appartements : 9 par étage
+        for (let num = 1; num <= 9; num++) {
+            // Exemple : étage 2, appart 3 → 23  → A23
+            const appartNum = `${bat.nom}${etage}${num}`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${appartNum}</td>
+                <td><input type="checkbox" class="couche1"></td>
+                <td><input type="checkbox" class="couche2"></td>
+                <td><input type="checkbox" class="termine"></td>
+                <td class="comment"><input type="text" class="editable" placeholder="Ajouter un commentaire..."></td>
+            `;
+            tableBody.appendChild(tr);
+        }
+    }
+});
+
+// Gestion automatique du "Terminé"
+document.querySelector('#appartTable').addEventListener('change', (e) => {
+    if (e.target.matches('.couche1, .couche2')) {
+        const row = e.target.closest('tr');
+        const couche1 = row.querySelector('.couche1')?.checked;
+        const couche2 = row.querySelector('.couche2')?.checked;
+        const termine = row.querySelector('.termine');
+        if (termine) {
+            termine.checked = couche1 && couche2;
+        }
+    }
+});
+</script>
+
+</body>
+</html>
